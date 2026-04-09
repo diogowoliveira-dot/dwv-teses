@@ -1,7 +1,8 @@
 'use client'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChatMessage } from '@/lib/types'
+import { exportToPDF } from '@/lib/export-pdf'
 
 interface ChatWindowProps {
   conversationId: string
@@ -164,13 +165,27 @@ export default function ChatWindow({ conversationId, initialMessages = [] }: Cha
               <span className="text-[10px] text-muted">
                 Enter para enviar · Shift+Enter para nova linha
               </span>
-              <button
-                onClick={() => sendMessage('Pode compilar os dados e criar as tabelas.')}
-                disabled={loading || messages.length < 2}
-                className="text-[10px] text-red hover:opacity-80 disabled:opacity-30 transition-opacity"
-              >
-                Compilar e gerar tabelas →
-              </button>
+              <div className="flex gap-4">
+                {messages.some(m => m.role === 'assistant') && (
+                  <button
+                    onClick={() => exportToPDF(messages)}
+                    disabled={loading}
+                    className="text-[10px] text-muted hover:text-off disabled:opacity-30 transition-colors flex items-center gap-1"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9v4h2v-4h3l-4-4-4 4h3z"/>
+                    </svg>
+                    Exportar PDF
+                  </button>
+                )}
+                <button
+                  onClick={() => sendMessage('Pode compilar os dados e criar as tabelas.')}
+                  disabled={loading || messages.length < 2}
+                  className="text-[10px] text-red hover:opacity-80 disabled:opacity-30 transition-opacity"
+                >
+                  Compilar e gerar tabelas →
+                </button>
+              </div>
             </div>
           )}
         </div>
