@@ -1,11 +1,13 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -15,16 +17,16 @@ export default function LoginPage() {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, password }),
     })
 
     const data = await res.json()
     setLoading(false)
 
     if (!res.ok) {
-      setError(data.error || 'Erro ao enviar link')
-    } else {
-      setSent(true)
+      setError(data.error || 'Erro ao fazer login')
+    } else if (data.redirect) {
+      router.push(data.redirect)
     }
   }
 
@@ -40,56 +42,52 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-bg2 border border-border rounded-xl p-8">
-          {!sent ? (
-            <>
-              <h1 className="font-serif text-xl text-off mb-2">Acesso à plataforma</h1>
-              <p className="text-muted text-sm mb-6 leading-relaxed">
-                Digite seu email e enviaremos um link de acesso.
-              </p>
+          <h1 className="font-serif text-xl text-off mb-2">Acesso à plataforma</h1>
+          <p className="text-muted text-sm mb-6 leading-relaxed">
+            Digite seu email e senha para acessar.
+          </p>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div>
-                  <label className="block text-xs text-muted mb-2 tracking-widest uppercase">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    required
-                    className="w-full bg-bg3 border border-border rounded-lg px-4 py-3 text-off text-sm outline-none focus:border-[#333] transition-colors placeholder:text-muted"
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-red text-xs">{error}</p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading || !email}
-                  className="w-full bg-red text-white rounded-lg py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
-                >
-                  {loading ? 'Enviando...' : 'Enviar link de acesso'}
-                </button>
-              </form>
-            </>
-          ) : (
-            <div className="text-center py-2">
-              <div className="text-3xl mb-4">✉️</div>
-              <h2 className="font-serif text-lg text-off mb-2">Link enviado</h2>
-              <p className="text-muted text-sm leading-relaxed">
-                Verifique seu email <strong className="text-off">{email}</strong> e clique no link para acessar.
-              </p>
-              <button
-                onClick={() => { setSent(false); setEmail('') }}
-                className="mt-6 text-xs text-muted hover:text-off transition-colors underline"
-              >
-                Usar outro email
-              </button>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs text-muted mb-2 tracking-widest uppercase">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                required
+                className="w-full bg-bg3 border border-border rounded-lg px-4 py-3 text-off text-sm outline-none focus:border-[#333] transition-colors placeholder:text-muted"
+              />
             </div>
-          )}
+
+            <div>
+              <label className="block text-xs text-muted mb-2 tracking-widest uppercase">
+                Senha
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full bg-bg3 border border-border rounded-lg px-4 py-3 text-off text-sm outline-none focus:border-[#333] transition-colors placeholder:text-muted"
+              />
+            </div>
+
+            {error && (
+              <p className="text-red text-xs">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !email || !password}
+              className="w-full bg-red text-white rounded-lg py-3 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
         </div>
 
         <p className="text-center text-muted text-xs mt-6">
