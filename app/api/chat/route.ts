@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { SYSTEM_PROMPT } from '@/lib/system-prompt'
 import { ChatMessage } from '@/lib/types'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,15 +38,30 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Chamar Claude API
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
+    // Chamar Claude API via fetch direto
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: messages.map(m => ({ role: m.role, content: m.content })),
+      }),
     })
 
-    const assistantContent = response.content[0].type === 'text'
+    if (!anthropicRes.ok) {
+      const errBody = await anthropicRes.text()
+      console.error('Anthropic API error:', anthropicRes.status, errBody)
+      return NextResponse.json({ error: 'Erro na API de IA' }, { status: 502 })
+    }
+
+    const response = await anthropicRes.json()
+    const assistantContent = response.content?.[0]?.type === 'text'
       ? response.content[0].text
       : ''
 
