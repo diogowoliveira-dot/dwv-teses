@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+
+export async function middleware(req: NextRequest) {
+  let response = NextResponse.next({ request: req })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return req.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value))
+          response = NextResponse.next({ request: req })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // Rotas protegidas
+  if (req.nextUrl.pathname.startsWith('/chat') && !user) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  // Redirecionar usuário logado para o chat
+  if ((req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/') && user) {
+    return NextResponse.redirect(new URL('/chat', req.url))
+  }
+
+  return response
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}
