@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Chamar Claude API
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: messages.map(m => ({ role: m.role, content: m.content })),
