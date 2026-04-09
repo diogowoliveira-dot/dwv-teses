@@ -76,9 +76,22 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ content: assistantContent })
-  } catch (error) {
-    console.error('Chat error:', error)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Chat error:', error?.message || error)
+    console.error('Chat error details:', JSON.stringify({
+      name: error?.name,
+      status: error?.status,
+      message: error?.message,
+      type: error?.type,
+    }))
+
+    const message = error?.status === 401
+      ? 'API key inválida'
+      : error?.status === 429
+      ? 'Limite de requisições atingido'
+      : error?.message || 'Erro interno'
+
+    return NextResponse.json({ error: message }, { status: error?.status || 500 })
   }
 }
 
