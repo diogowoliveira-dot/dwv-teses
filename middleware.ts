@@ -28,6 +28,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
+  // Permitir acesso à página de reset de senha sem redirecionar
+  if (req.nextUrl.pathname.startsWith('/reset-password')) {
+    return response
+  }
+
   // Redirecionar usuário logado para o chat
   if ((req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/') && user) {
     return NextResponse.redirect(new URL('/chat', req.url))

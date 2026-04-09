@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -47,13 +48,16 @@ export default function LoginPage() {
             Digite seu email e senha para acessar.
           </p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} autoComplete="on" className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs text-muted mb-2 tracking-widest uppercase">
+              <label htmlFor="email" className="block text-xs text-muted mb-2 tracking-widest uppercase">
                 Email
               </label>
               <input
+                id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="seu@email.com"
@@ -63,11 +67,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs text-muted mb-2 tracking-widest uppercase">
+              <label htmlFor="password" className="block text-xs text-muted mb-2 tracking-widest uppercase">
                 Senha
               </label>
               <input
+                id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -88,6 +95,12 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
+
+          <div className="mt-4 text-center">
+            <Link href="/reset-password" className="text-xs text-muted hover:text-off transition-colors">
+              Esqueci minha senha
+            </Link>
+          </div>
         </div>
 
         <p className="text-center text-muted text-xs mt-6">
